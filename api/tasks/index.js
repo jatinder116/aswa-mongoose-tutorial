@@ -4,13 +4,13 @@ const store = require('../store.js');
 // Export our function
 module.exports = async function (context, req) {
     // Get the current user
-    const userId = getUserId(req);
+    // const userId = getUserId(req);
 
-    // If no current user, return 401
-    if(!userId) {
-        context.res.status = 401;
-        return;
-    }
+    // // If no current user, return 401
+    // if(!userId) {
+    //     context.res.status = 401;
+    //     return;
+    // }
 
     // setup our default content type (we always return JSON)
     context.res = {
@@ -21,16 +21,18 @@ module.exports = async function (context, req) {
 
     // Connect to the database
     await store.connect();
-
+    console.log("vkvsvsd===",req.method);
     // Read the method and determine the requested action
     switch (req.method) {
         // If get, return all tasks
         case 'GET':
-            await getTasks(context, userId);
+            // await getTasks(context, userId);
+            await getWalletAddress(context);
             break;
         // If post, create new task
         case 'POST':
-            await createTask(context, userId);
+            // await createTask(context, userId);
+            await createWalletAddresses(context)
             break;
         // If put, update task
         case 'PUT':
@@ -72,6 +74,55 @@ async function createTask(context, userId) {
     // return new object
     context.res.body = task;
 }
+
+
+// Create new task
+async function createWalletAddresses(context) {
+    // Read the uploaded task
+    const newWalletAddress = context.req.body;
+    const checkExist = await checkWalletAddress(newWalletAddress)
+    if(checkExist){
+        context.res.headers = { 'Content-Type':'application/json' };
+        context.res.status = 200;
+        // return new object
+        context.res.body = {status:0,msg:"Wallet address already exist"};
+    }else{
+         // Save to database
+    const task = await store.postWalletAddress(newWalletAddress);
+    // Set the HTTP status to created
+    context.res.headers = { 'Content-Type':'application/json' };
+    context.res.status = 201;
+    // return new object
+    context.res.body = {status:1,msg:"Succesfully added the wallet address", data:task};
+    }
+}
+
+
+// check wallet address Exist ==================================
+async function checkWalletAddress(walletAddress) {
+    const task =  await store.checkWalletAddress(walletAddress);
+    return task
+}
+
+
+
+// Return all tasks
+async function getWalletAddress(context) {
+    const walletAddress = context.req.query;
+    const task =  await store.checkWalletAddress(walletAddress);
+    if(task.length>0){
+        context.res.headers = { 'Content-Type':'application/json' };
+        context.res.status = 201;
+        // return new object
+        context.res.body = {status:1,msg:"wallet address exist", data:task};
+    }else{
+        context.res.headers = { 'Content-Type':'application/json' };
+        context.res.status = 200;
+        // return new object
+        context.res.body = {status:0,msg:"wallet address not exist"};
+    }
+}
+
 
 // Update an existing function
 async function updateTask(context, userId) {
