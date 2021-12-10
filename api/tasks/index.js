@@ -83,18 +83,21 @@ async function createWalletAddresses(context) {
     const checkExist = await checkWalletAddress(newWalletAddress)
     console.log("svbjskdv===",checkExist);
     if(checkExist.length>0){
-             // Save to database
-    const task = await store.postWalletAddress(newWalletAddress);
-    // Set the HTTP status to created
-    context.res.headers = { 'Content-Type':'application/json' };
-    context.res.status = 201;
-    // return new object
-    context.res.body = {status:1,msg:"Succesfully added the wallet address", data:task};
-    }else{
+
+
         context.res.headers = { 'Content-Type':'application/json' };
         context.res.status = 200;
         // return new object
         context.res.body = {status:0,msg:"Wallet address already exist"};
+
+    }else{
+             // Save to database
+             const task = await store.postWalletAddress(newWalletAddress);
+             // Set the HTTP status to created
+             context.res.headers = { 'Content-Type':'application/json' };
+             context.res.status = 201;
+             // return new object
+             context.res.body = {status:1,msg:"Succesfully added the wallet address", data:task};
     }
 }
 
